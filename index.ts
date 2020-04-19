@@ -22,7 +22,7 @@ interface OptionalArgumentSpecification {
 	type?: any;
 	required?: boolean;
 	defaultValue?: any;
-	mapValue?: (value) => any;
+	mapValue?: (value: any) => any;
 	usage?: string;
 }
 
@@ -44,18 +44,18 @@ interface OptionalArgumentsSpecification {
 }
 
 class InvalidArgumentsSpecificationError extends Error {
-	argumentsSpecification: ArgumentSpecification;
+	argumentsSpecification: OptionalArgumentSpecification;
 
-	constructor(argumentsSpecification, ...genericArgs) {
-		super(...genericArgs);
+	constructor(argumentsSpecification: OptionalArgumentSpecification, ...args: any[]) {
+		super(...args);
 		this.name = 'InvalidArgumentsSpecificationError';
 		this.argumentsSpecification = argumentsSpecification;
 	}
 }
 
 class UnknownArgError extends Error {
-	constructor(argument, ...genericArgs) {
-		super(...genericArgs);
+	constructor(argument: string, ...args: any[]) {
+		super(...args);
 		this.name = 'UnknownArgError';
 		this.message = `${argument} could not be parsed as it is an unknown argument`;
 	}
@@ -64,15 +64,15 @@ class UnknownArgError extends Error {
 class InvalidArgError extends Error {
 	argument: [string, ArgumentSpecification];
 
-	constructor(argument, ...genericArgs) {
-		super(...genericArgs);
+	constructor(argument: [string, ArgumentSpecification], ...args: any[]) {
+		super(...args);
 		this.name = 'InvalidArgError';
 		this.argument = argument;
 	}
 }
 
 class ArgumentParser {
-	argumentsSpecification: ArgumentsSpecification;
+	argumentsSpecification!: ArgumentsSpecification;
 	helpUsage: string;
 	helpOnNoArguments: boolean;
 	errorOnUnknownArguments: boolean;
@@ -156,7 +156,7 @@ class ArgumentParser {
 		return [name, value];
 	}
 
-	isShortArgument(argument) { return !!this.getShortArgument(argument); }
+	isShortArgument(argument: string) { return !!this.getShortArgument(argument); }
 
 	getLongArgument(argument: string): [string, string | undefined] | undefined {
 		const match = argument.match(/^--([\w][\w-]*[\w])(=(.+))?$/);
@@ -167,16 +167,24 @@ class ArgumentParser {
 		return [name, value];
 	}
 
-	isLongArgument(argument) { return !!this.getLongArgument(argument); }
+	isLongArgument(argument: string) { return !!this.getLongArgument(argument); }
 
-	getNameAndSpecificationByShortName(argShortName) {
-		const [name] = this.getShortArgument(argShortName);
+	getNameAndSpecificationByShortName(argShortName: string) {
+		const shortArgument = this.getShortArgument(argShortName);
+		if (isUndefined(shortArgument)) {
+			return;
+		}
+		const [name] = shortArgument;
 		return Object.entries(this.argumentsSpecification)
 			.find(([longName, { shortName }]) => shortName === name);
 	}
 
-	getNameAndSpecificationByLongName(argLongName) {
-		const [name] = this.getLongArgument(argLongName);
+	getNameAndSpecificationByLongName(argLongName: string) {
+		const longArgument = this.getLongArgument(argLongName);
+		if (isUndefined(longArgument)) {
+			return;
+		}
+		const [name] = longArgument;
 		return Object.entries(this.argumentsSpecification)
 			.find(([longName]) => longName === name);
 	}
@@ -213,14 +221,23 @@ class ArgumentParser {
 
 		while (argumentsToParse.length > 0 && !parsedArguments.help) {
 			const argument = argumentsToParse.shift();
+			if (!isString(argument)) {
+				throw new TypeError(
+					`Arguments are expected to be parsed from strings but ${argument} is not a string`,
+				);
+			}
 
 			if (this.isShortArgument(argument)) {
-				const [shortArgumentName, value] = this.getShortArgument(argument);
+				const [shortArgumentName, value] = this.getShortArgument(argument) as [string, string | undefined];
 				if (!isUndefined(value)) {
 					const longNameAndSpecification = this.getNameAndSpecificationByShortName(`-${shortArgumentName}`);
 
-					if (!longNameAndSpecification && this.errorOnUnknownArguments) {
-						throw new UnknownArgError(argument);
+					if (isUndefined(longNameAndSpecification)) {
+						if (this.errorOnUnknownArguments) {
+							throw new UnknownArgError(argument);
+						} else {
+							continue;
+						}
 					}
 
 					const [longName, argSpec] = longNameAndSpecification;
@@ -245,8 +262,12 @@ class ArgumentParser {
 					shortArgumentNames.forEach((shortArgName) => {
 						const longNameAndSpecification = this.getNameAndSpecificationByShortName(`-${shortArgName}`);
 
-						if (!longNameAndSpecification && this.errorOnUnknownArguments) {
-							throw new UnknownArgError(argument);
+						if (isUndefined(longNameAndSpecification)) {
+							if (this.errorOnUnknownArguments) {
+								throw new UnknownArgError(argument);
+							} else {
+								return;
+							}
 						}
 
 						const [longName, argSpec] = longNameAndSpecification;
@@ -267,19 +288,29 @@ class ArgumentParser {
 									`-${shortArgName} was provided without a corresponding argument value`,
 								);
 							}
+							const argumentValue = argumentsToParse.shift();
+							if (!isString(argumentValue)) {
+								throw new TypeError(
+									`Arguments are expected to be parsed from strings but ${argumentValue} is not a string`,
+								);
+							}
 
-							parsedArguments[longName] = this.toArgumentValue({ ...argSpec, value: argumentsToParse.shift() });
+							parsedArguments[longName] = this.toArgumentValue({ ...argSpec, value: argumentValue });
 						}
 					});
 				}
 
 			} else if (this.isLongArgument(argument)) {
-				const [, value] = this.getLongArgument(argument);
+				const [, value] = this.getLongArgument(argument) as [string, string | undefined];
 				if (!isUndefined(value)) {
 					const longNameAndSpecification = this.getNameAndSpecificationByLongName(argument);
 
-					if (!longNameAndSpecification && this.errorOnUnknownArguments) {
-						throw new UnknownArgError(argument);
+					if (isUndefined(longNameAndSpecification)) {
+						if (this.errorOnUnknownArguments) {
+							throw new UnknownArgError(argument);
+						} else {
+							continue;
+						}
 					}
 
 					const [longName, argSpec] = longNameAndSpecification;
@@ -301,8 +332,12 @@ class ArgumentParser {
 				} else {
 					const longNameAndSpecification = this.getNameAndSpecificationByLongName(argument);
 
-					if (!longNameAndSpecification && this.errorOnUnknownArguments) {
-						throw new UnknownArgError(argument);
+					if (isUndefined(longNameAndSpecification)) {
+						if (this.errorOnUnknownArguments) {
+							throw new UnknownArgError(argument);
+						} else {
+							continue;
+						}
 					}
 
 					const [longName, argSpec] = longNameAndSpecification;
@@ -317,8 +352,14 @@ class ArgumentParser {
 								`${argument} was provided without a corresponding argument`,
 							);
 						}
+						const argumentValue = argumentsToParse.shift();
+						if (!isString(argumentValue)) {
+							throw new TypeError(
+								`Arguments are expected to be parsed from strings but ${argumentValue} is not a string`,
+							);
+						}
 
-						parsedArguments[longName] = this.toArgumentValue({ ...argSpec, value: argumentsToParse.shift() });
+						parsedArguments[longName] = this.toArgumentValue({ ...argSpec, value: argumentValue });
 					}
 				}
 

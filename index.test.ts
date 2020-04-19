@@ -8,7 +8,7 @@ interface GetDSVOptions {
 
 const getDelimeterSeparatedValues = (values: string, { delimiter = ',', dequote = true, quotemark }: GetDSVOptions = {}) => {
 	if (quotemark) {
-		const separatedValues = [];
+		const separatedValues: string[] = [];
 		const pushValue = (value: string) => {
 			const shouldDequote = dequote && value.startsWith(quotemark) && value.endsWith(quotemark);
 			separatedValues.push(shouldDequote ? value.slice(quotemark.length, value.length - quotemark.length) : value);
@@ -97,9 +97,9 @@ describe('ArgumentParser', () => {
 				shortName: 's',
 			},
 		});
-		const args = argumentsParser.parse(['-sv']);
 
-		expect(args).toEqual({ help: false, special: true, verbose: true });
+		expect(argumentsParser.parse(['-sv'])).toEqual({ help: false, special: true, verbose: true });
+		expect(argumentsParser.parse(['-vs'])).toEqual({ help: false, special: true, verbose: true });
 	});
 
 	it('Should parse boolean arguments with `defaultValue: true` as `true` when not provided', () => {
@@ -172,6 +172,7 @@ describe('ArgumentParser', () => {
 			},
 		});
 		const args = argumentsParser.parse(['--age=27.5']);
+
 		expect(args).toEqual({ help: false, age: 27.5, verbose: false });
 	});
 
@@ -183,6 +184,7 @@ describe('ArgumentParser', () => {
 			},
 		});
 		const args = argumentsParser.parse(['--skills=Budo,"Krav Maga",Wushu']);
+
 		expect(args).toEqual({ help: false, skills: ['Budo', 'Krav Maga', 'Wushu'], verbose: false });
 	});
 
