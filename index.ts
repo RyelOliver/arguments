@@ -88,8 +88,8 @@ class ArgumentParser {
 		this.errorOnUnknownArguments = errorOnUnknownArguments;
 	}
 
-	setArgumentsSpecification(argsSpec: OptionalArgumentsSpecification) {
-		this.argumentsSpecification = Object.entries(argsSpec)
+	setArgumentsSpecification(optionalArgumentsSpecification: OptionalArgumentsSpecification) {
+		this.argumentsSpecification = Object.entries(optionalArgumentsSpecification)
 			.reduce((argumentsSpecification: ArgumentsSpecification, [longName, argumentSpecification]) => {
 				if (argumentSpecification.shortName) {
 					const duplicateArgSpec = Object.values(argumentsSpecification)

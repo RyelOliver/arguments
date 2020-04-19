@@ -1,4 +1,4 @@
-# args
+# arguments
 
 Parse conventional CLI arguments.
 
@@ -19,15 +19,15 @@ Parse conventional CLI arguments.
 ## API
 
 ```
-import { ArgumentParser } from '@ryel/args';
+import ArgumentParser from '@ryel/arguments';
 
-const argsParser = new ArgumentParser(argsSpec, options);
+const argumentsParser = new ArgumentParser(argumentsSpecification, options);
 
-const args = argsParser.parse();
+const args = argumentsParser.parse();
 ```
 
 
-`argsSpec` is an object specifying all expected arguments. The specification must provide a long name for each argument, but all other properties are optional.
+`argumentsSpecification` is an object specifying all expected arguments. The specification must provide a long name for each argument, but all other properties are optional.
 
 By default an argument will be considered a boolean unless a `type` is provided. Arguments specified with a `type` of `Boolean` can either be provided as flags, or can be provided as an argument with a value that is boolean like. Boolean like values include `true`, `t`, `yes`, `y` and `1` as truthy and `false`, `f`, `no`, `n` and `0` as falsy. Arguments specified with a `type` of `Number` will be parsed from a string to a number.
 

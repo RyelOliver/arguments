@@ -1,5 +1,5 @@
 {
-	"name": "args",
+	"name": "arguments",
 	"version": "1.0.0",
 	"description": "Parse conventional CLI arguments.",
 	"main": "index.js",
@@ -9,7 +9,9 @@
 		"test:coverage": "jest --coverage"
 	},
 	"keywords": [
-		"javascript"
+		"javascript",
+		"typescript",
+		"cli"
 	],
 	"author": "Ryel Oliver <rmuchunku@gmail.com> (https://github.com/RyelOliver)",
 	"license": "MIT",
