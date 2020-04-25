@@ -26,7 +26,7 @@ const getDelimeterSeparatedValues = (values: string, { delimiter = ',', dequote 
 
 			} else if (values.slice(valueEndIndex).startsWith(quotemark)) {
 				if (inQuote) {
-					if (!values.slice(valueEndIndex + 1).startsWith(delimiter)) {
+					if (valueEndIndex + 1 < values.length && !values.slice(valueEndIndex + 1).startsWith(delimiter)) {
 						throw new SyntaxError(`Expected closing quotemark at the end of the value ${values.slice(valueStartIndex)}`);
 					}
 					inQuote = false;
