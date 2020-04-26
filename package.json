@@ -1,9 +1,10 @@
 {
-	"name": "arguments",
+	"name": "@ryel/arguments",
 	"version": "1.0.0",
 	"description": "Parse conventional CLI arguments.",
-	"main": "index.js",
+	"main": "build/index.js",
 	"scripts": {
+		"build": "tsc index.ts --declaration --outDir build",
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:coverage": "jest --coverage"
@@ -22,5 +23,13 @@
 		"ts-jest": "^25.4.0",
 		"tslint": "^6.1.1",
 		"typescript": "^3.8.3"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/RyelOliver/arguments.git"
+	},
+	"bugs": {
+		"url": "https://github.com/RyelOliver/arguments/issues"
+	},
+	"homepage": "https://github.com/RyelOliver/arguments#readme"
 }

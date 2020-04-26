@@ -387,4 +387,4 @@ class ArgumentParser {
 	}
 }
 
-export default ArgumentParser;
+export = ArgumentParser;
